@@ -22,7 +22,7 @@ let player;
 let isJumping = false;
 let ground;
 let background;
-let speed = 4; // How fast the ground moves to the left
+let speed = 5; // How fast the ground moves to the left
 let groundWidth;
 let bgWidth;
 let block;
@@ -49,12 +49,15 @@ function create() {
     ground.add(tile);
     tile.body.allowGravity = false;
     tile.body.immovable = true;
+    tile.body.setSize(200, 125);
   }
   bgWidth = 1212;
   background = this.add.group();
   for (let i = 0; i < 3; i++) {
     let bgTile = this.add.tileSprite(i * 1212, 0, 1212, 720, 'background');
+    bgTile.setDisplaySize(bgTile.width, 1400);
     background.add(bgTile);
+    bgTile.setDepth(-1);
   }
 
   this.physics.add.collider(
@@ -76,6 +79,7 @@ function create() {
   spike.body.allowGravity = false;
   spike.body.immovable = true;
   spike.setDisplaySize(64, 64);
+  spike.body.setSize(spike.width * 0.2, spike.height * 0.2);
 
   this.physics.add.collider(
     player,
@@ -98,7 +102,7 @@ function handlePlayerGroundCollision(player, tile) {
   player.y = 625;
 }
 function handlePlayerSpikeCollision(player, spike) {
-  alert('hi');
+  lose();
 }
 function handlePlayerBlockCollision(player, block) {
   if (player.getBounds().bottom >= block.getBounds().top) {
@@ -158,7 +162,7 @@ function update() {
 
     // If a tile moves off-screen to the left, reset its position to the right
     if (tile.x + groundWidth < 0) {
-      tile.x = ground.getChildren().length * groundWidth - groundWidth;
+      tile.x = ground.getChildren().length * groundWidth - groundWidth - 2;
     }
   });
   background.getChildren().forEach((bgTile) => {
@@ -171,5 +175,5 @@ function update() {
   });
 }
 function lose() {
-  alert('die');
+  //alert('die');
 }
