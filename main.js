@@ -25,8 +25,8 @@ let background;
 let speed = 5; // How fast the ground moves to the left
 let groundWidth;
 let bgWidth;
-let block;
-let spike;
+let blocks;
+let spikes;
 
 const game = new Phaser.Game(config);
 function preload() {
@@ -43,7 +43,10 @@ function create() {
   this.input.on('pointerdown', jump, this);
 
   groundWidth = 125;
+  blocks = this.physics.add.group();
+  spikes = this.physics.add.group();
   ground = this.physics.add.group();
+  background = this.add.group();
   for (let i = 0; i < 10; i++) {
     let tile = this.add.tileSprite(i * 125, 720, 148, 125, 'ground');
     ground.add(tile);
@@ -52,7 +55,6 @@ function create() {
     tile.body.setSize(200, 125);
   }
   bgWidth = 1212;
-  background = this.add.group();
   for (let i = 0; i < 3; i++) {
     let bgTile = this.add.tileSprite(i * 1212, 0, 1212, 720, 'background');
     bgTile.setDisplaySize(bgTile.width, 1400);
@@ -68,22 +70,9 @@ function create() {
     this
   );
 
-  block = this.physics.add.image(1000, 400, 'block');
-  block.setOrigin(0, 1);
-  block.body.allowGravity = false;
-  block.body.immovable = true;
-  block.setDisplaySize(64, 64);
-
-  spike = this.physics.add.image(1000, 659, 'spike');
-  spike.setOrigin(0, 1);
-  spike.body.allowGravity = false;
-  spike.body.immovable = true;
-  spike.setDisplaySize(64, 64);
-  spike.body.setSize(spike.width * 0.2, spike.height * 0.2);
-
   this.physics.add.collider(
     player,
-    block,
+    blocks,
     handlePlayerBlockCollision,
     null,
     this
@@ -91,11 +80,12 @@ function create() {
 
   this.physics.add.collider(
     player,
-    spike,
+    spikes,
     handlePlayerSpikeCollision,
     null,
     this
   );
+  this.makeBlock(0, 0);
 }
 
 function handlePlayerGroundCollision(player, tile) {
@@ -155,8 +145,12 @@ function jump() {
 }
 
 function update() {
-  block.x -= speed;
-  spike.x -= speed;
+  blocks.getChildren().forEach((block) => {
+    block.x -= speed;
+  });
+  spikes.getChildren().forEach((spike) => {
+    spike.x -= speed;
+  });
   ground.getChildren().forEach((tile) => {
     tile.x -= speed;
 
@@ -175,5 +169,37 @@ function update() {
   });
 }
 function lose() {
-  //alert('die');
+  this.tweens.add({
+    targets: background.getChildren(), // All images in the group
+    tint: [0xff0000, 0xffffff], // Pulse from red (0xff0000) to normal (0xffffff)
+    duration: 200, // Duration for one pulse cycle
+    yoyo: true, // Yoyo effect to go back and forth
+    repeat: 0, // Repeat indefinitely
+    ease: 'Sine.easeInOut', // Smooth easing function
+  });
+}
+function makeBlock(xInt, yInt) {
+  let block = this.physics.add.image(
+    1000 + xInt * 64,
+    400 + yInt * 64,
+    'block'
+  );
+  block.setOrigin(0, 1);
+  block.body.allowGravity = false;
+  block.body.immovable = true;
+  block.setDisplaySize(64, 64);
+  blocks.add(block);
+}
+function makeSpike(xInt, yInt) {
+  let spike = this.physics.add.image(
+    1000 + xInt * 64,
+    400 + yInt * 64,
+    'spike'
+  );
+  spike.setOrigin(0, 1);
+  spike.body.allowGravity = false;
+  spike.body.immovable = true;
+  spike.setDisplaySize(64, 64);
+  spike.body.setSize(spike.width * 0.2, spike.height * 0.2);
+  spikes.add(spike);
 }
