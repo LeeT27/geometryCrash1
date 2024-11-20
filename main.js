@@ -8,7 +8,7 @@ const config = {
     default: 'arcade',
     arcade: {
       gravity: { y: 6400 },
-      debug: false,
+      debug: true,
     },
   },
   scene: {
@@ -85,7 +85,16 @@ function create() {
     null,
     this
   );
-  this.makeBlock(0, 0);
+  //COURSE IS CREATED HERE
+  makeBlock.call(this, 3, 3);
+  makeBlock.call(this, 4, 2);
+  makeBlock.call(this, 5, 2);
+  makeBlock.call(this, 6, 2);
+  makeBlock.call(this, 7, 3);
+  makeSpike.call(this, 4, 5);
+  makeSpike.call(this, 6, 5);
+
+  // ^^^^
 }
 
 function handlePlayerGroundCollision(player, tile) {
@@ -95,21 +104,36 @@ function handlePlayerSpikeCollision(player, spike) {
   lose();
 }
 function handlePlayerBlockCollision(player, block) {
-  if (player.getBounds().bottom >= block.getBounds().top) {
-    // Player hits the bottom (game over)
-    lose();
-  } else if (
-    player.getBounds().left <= block.getBounds().right ||
-    player.getBounds().right >= block.getBounds().left
+  const playerBounds = player.getBounds();
+  const blockBounds = block.getBounds();
+
+  // Check for bottom collision - if player hits the bottom of the block, they lose
+  if (
+    playerBounds.bottom <= blockBounds.top &&
+    playerBounds.top < blockBounds.top
   ) {
-    // Player hits the left or right side of the block (game over)
+    // Reposition the player on top of the block
+    player.y = block.y - player.height / 2;
+  }
+  if (
+    playerBounds.bottom >= blockBounds.top &&
+    playerBounds.top < blockBounds.top
+  ) {
     lose();
+    return;
   }
-  // Check if the player hits the top of the block
-  if (player.getBounds().top <= block.getBounds().bottom) {
-    // Player hits the top, keep player's y position on top
-    player.y = block.y - player.height / 2; // Adjust this depending on your setup
+
+  // Check for side collisions (left or right) - if player hits side, they lose
+  if (
+    playerBounds.left < blockBounds.right &&
+    playerBounds.right > blockBounds.left &&
+    playerBounds.bottom > blockBounds.top // This ensures that player is not landing from above
+  ) {
+    lose();
+    return;
   }
+
+  // Check if the player hits the top of the block (and they are falling down)
 }
 
 function jump() {
@@ -147,9 +171,16 @@ function jump() {
 function update() {
   blocks.getChildren().forEach((block) => {
     block.x -= speed;
+    if (block.x + block.width < 0) {
+      block.destroy(); // Remove block once it goes off-screen
+    }
   });
+
   spikes.getChildren().forEach((spike) => {
     spike.x -= speed;
+    if (spike.x + spike.width < 0) {
+      spike.destroy(); // Remove spike once it goes off-screen
+    }
   });
   ground.getChildren().forEach((tile) => {
     tile.x -= speed;
@@ -179,27 +210,19 @@ function lose() {
   });
 }
 function makeBlock(xInt, yInt) {
-  let block = this.physics.add.image(
-    1000 + xInt * 64,
-    400 + yInt * 64,
-    'block'
-  );
+  let block = this.physics.add.image(750 + xInt * 64, 657 - yInt * 64, 'block');
+  blocks.add(block);
   block.setOrigin(0, 1);
   block.body.allowGravity = false;
   block.body.immovable = true;
   block.setDisplaySize(64, 64);
-  blocks.add(block);
 }
 function makeSpike(xInt, yInt) {
-  let spike = this.physics.add.image(
-    1000 + xInt * 64,
-    400 + yInt * 64,
-    'spike'
-  );
+  let spike = this.physics.add.image(750 + xInt * 64, 657 - yInt * 64, 'spike');
+  spikes.add(spike);
   spike.setOrigin(0, 1);
   spike.body.allowGravity = false;
   spike.body.immovable = true;
   spike.setDisplaySize(64, 64);
   spike.body.setSize(spike.width * 0.2, spike.height * 0.2);
-  spikes.add(spike);
 }
