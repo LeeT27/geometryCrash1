@@ -8,7 +8,7 @@ const config = {
     default: 'arcade',
     arcade: {
       gravity: { y: 6400 },
-      debug: true,
+      debug: false,
     },
   },
   scene: {
@@ -27,6 +27,7 @@ let groundWidth;
 let bgWidth;
 let blocks;
 let spikes;
+let play = true;
 
 const game = new Phaser.Game(config);
 function preload() {
@@ -35,6 +36,10 @@ function preload() {
   this.load.image('block', 'assets/block.webp');
   this.load.image('spike', 'assets/spike.png');
   this.load.image('background', 'assets/background.jpg');
+  this.load.spritesheet('explosion', 'assets/explosion.png', {
+    frameWidth: 100,
+    frameHeight: 95,
+  });
 }
 
 function create() {
@@ -93,15 +98,40 @@ function create() {
   makeBlock.call(this, 7, 3);
   makeSpike.call(this, 4, 5);
   makeSpike.call(this, 6, 5);
+  makeSpike.call(this, 9, 0);
+  makeSpike.call(this, 10, 0);
+
+  for (let i = 0; i < 99; i++) {
+    makeSpike.call(this, 10 + 5 * i, 0);
+    makeSpike.call(this, 16.8 + 5 * i, 0);
+  }
+
+  for (let i = 0; i < 99; i++) {
+    makeBlock.call(this, 20 + i, 5);
+  }
 
   // ^^^^
+
+  this.anims.create({
+    key: 'explode',
+    frames: this.anims.generateFrameNumbers('explosion', { start: 0, end: 25 }), // Adjust frame numbers
+    frameRate: 60,
+    hideOnComplete: true, // Automatically hide when done
+  });
 }
 
 function handlePlayerGroundCollision(player, tile) {
   player.y = 625;
 }
 function handlePlayerSpikeCollision(player, spike) {
-  lose();
+  lose(player);
+  const explosion = this.physics.add
+    .sprite(player.x, player.y, 'explosion')
+    .play('explode');
+  explosion.body.allowGravity = false;
+  explosion.on('animationcomplete', () => {
+    explosion.destroy();
+  });
 }
 function handlePlayerBlockCollision(player, block) {
   const playerBounds = player.getBounds();
@@ -169,45 +199,42 @@ function jump() {
 }
 
 function update() {
-  blocks.getChildren().forEach((block) => {
-    block.x -= speed;
-    if (block.x + block.width < 0) {
-      block.destroy(); // Remove block once it goes off-screen
-    }
-  });
+  if (play === true) {
+    blocks.getChildren().forEach((block) => {
+      block.x -= speed;
+      if (block.x + block.width < 0) {
+        block.destroy(); // Remove block once it goes off-screen
+      }
+    });
 
-  spikes.getChildren().forEach((spike) => {
-    spike.x -= speed;
-    if (spike.x + spike.width < 0) {
-      spike.destroy(); // Remove spike once it goes off-screen
-    }
-  });
-  ground.getChildren().forEach((tile) => {
-    tile.x -= speed;
+    spikes.getChildren().forEach((spike) => {
+      spike.x -= speed;
+      if (spike.x + spike.width < -500) {
+        spike.destroy(); // Remove spike once it goes off-screen
+      }
+    });
+    ground.getChildren().forEach((tile) => {
+      tile.x -= speed;
 
-    // If a tile moves off-screen to the left, reset its position to the right
-    if (tile.x + groundWidth < 0) {
-      tile.x = ground.getChildren().length * groundWidth - groundWidth - 2;
-    }
-  });
-  background.getChildren().forEach((bgTile) => {
-    bgTile.x -= speed / 10;
+      // If a tile moves off-screen to the left, reset its position to the right
+      if (tile.x + groundWidth < 0) {
+        tile.x = ground.getChildren().length * groundWidth - groundWidth - 2;
+      }
+    });
+    background.getChildren().forEach((bgTile) => {
+      bgTile.x -= speed / 10;
 
-    // If a tile moves off-screen to the left, reset its position to the right
-    if (bgTile.x + bgWidth < 0) {
-      bgTile.x = background.getChildren().length * bgWidth - bgWidth;
-    }
-  });
+      // If a tile moves off-screen to the left, reset its position to the right
+      if (bgTile.x + bgWidth < 0) {
+        bgTile.x = background.getChildren().length * bgWidth - bgWidth;
+      }
+    });
+  }
 }
 function lose() {
-  this.tweens.add({
-    targets: background.getChildren(), // All images in the group
-    tint: [0xff0000, 0xffffff], // Pulse from red (0xff0000) to normal (0xffffff)
-    duration: 200, // Duration for one pulse cycle
-    yoyo: true, // Yoyo effect to go back and forth
-    repeat: 0, // Repeat indefinitely
-    ease: 'Sine.easeInOut', // Smooth easing function
-  });
+  play = false;
+
+  player.destroy(); // Remove the rock
 }
 function makeBlock(xInt, yInt) {
   let block = this.physics.add.image(750 + xInt * 64, 657 - yInt * 64, 'block');
