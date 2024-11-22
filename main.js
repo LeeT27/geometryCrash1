@@ -27,6 +27,7 @@ let groundWidth;
 let bgWidth;
 let blocks;
 let spikes;
+let play = true;
 
 const game = new Phaser.Game(config);
 function preload() {
@@ -35,6 +36,10 @@ function preload() {
   this.load.image('block', 'assets/block.webp');
   this.load.image('spike', 'assets/spike.png');
   this.load.image('background', 'assets/background.jpg');
+  this.load.spritesheet('explosion', 'assets/explosion.png', {
+    frameWidth: 100,
+    frameHeight: 95,
+  });
 }
 
 function create() {
@@ -85,9 +90,37 @@ function create() {
     null,
     this
   );
-  makeBlock.call(this, 3, 2);
+  //COURSE IS CREATED HERE
+  makeBlock.call(this, 3, 3);
   makeBlock.call(this, 4, 2);
   makeBlock.call(this, 5, 2);
+  makeBlock.call(this, 6, 2);
+  makeBlock.call(this, 7, 3);
+  makeSpike.call(this, 4, 5);
+  makeSpike.call(this, 6, 5);
+  makeSpike.call(this, 9, 0);
+  makeSpike.call(this, 10, 0);
+  makeBlock.call(this, 11, 0);
+  makeBlock.call(this, 12, 0);
+  makeBlock.call(this, 13, 0);
+
+  for (let i = 0; i < 99; i++) {
+    makeSpike.call(this, 10 + 5 * i, 0);
+    makeSpike.call(this, 16.8 + 5 * i, 0);
+  }
+
+  for (let i = 0; i < 99; i++) {
+    makeBlock.call(this, 20 + i, 5);
+  }
+
+  // ^^^^
+
+  this.anims.create({
+    key: 'explode',
+    frames: this.anims.generateFrameNumbers('explosion', { start: 0, end: 25 }), // Adjust frame numbers
+    frameRate: 60,
+    hideOnComplete: true, // Automatically hide when done
+  });
 }
 
 function handlePlayerGroundCollision(player, tile) {
@@ -95,22 +128,20 @@ function handlePlayerGroundCollision(player, tile) {
 }
 function handlePlayerSpikeCollision(player, spike) {
   lose();
+  const explosion = this.physics.add
+    .sprite(player.x, player.y, 'explosion')
+    .play('explode');
+  explosion.body.allowGravity = false;
+  explosion.on('animationcomplete', () => {
+    explosion.destroy();
+  });
 }
 function handlePlayerBlockCollision(player, block) {
-  if (player.getBounds().bottom >= block.getBounds().top) {
-    // Player hits the bottom (game over)
+  if (player.bottom <= block.top + 5) {
+    alert('hello');
+    player.bottom = 400;
+  } else {
     lose();
-  } else if (
-    player.getBounds().left <= block.getBounds().right ||
-    player.getBounds().right >= block.getBounds().left
-  ) {
-    // Player hits the left or right side of the block (game over)
-    lose();
-  }
-  // Check if the player hits the top of the block
-  if (player.getBounds().top <= block.getBounds().bottom) {
-    // Player hits the top, keep player's y position on top
-    player.y = block.y - player.height / 2; // Adjust this depending on your setup
   }
 }
 
@@ -147,64 +178,57 @@ function jump() {
 }
 
 function update() {
-  blocks.getChildren().forEach((block) => {
-    block.x -= speed;
-    if (block.x + block.width < 0) {
-      block.destroy(); // Remove block once it goes off-screen
-    }
-  });
+  if (play === true) {
+    blocks.getChildren().forEach((block) => {
+      block.x -= speed;
+      if (block.x + block.width < 0) {
+        block.destroy(); // Remove block once it goes off-screen
+      }
+    });
 
-  spikes.getChildren().forEach((spike) => {
-    spike.x -= speed;
-    if (spike.x + spike.width < 0) {
-      spike.destroy(); // Remove spike once it goes off-screen
-    }
-  });
-  ground.getChildren().forEach((tile) => {
-    tile.x -= speed;
+    spikes.getChildren().forEach((spike) => {
+      spike.x -= speed;
+      if (spike.x + spike.width < -500) {
+        spike.destroy(); // Remove spike once it goes off-screen
+      }
+    });
+    ground.getChildren().forEach((tile) => {
+      tile.x -= speed;
 
-    // If a tile moves off-screen to the left, reset its position to the right
-    if (tile.x + groundWidth < 0) {
-      tile.x = ground.getChildren().length * groundWidth - groundWidth - 2;
-    }
-  });
-  background.getChildren().forEach((bgTile) => {
-    bgTile.x -= speed / 10;
+      // If a tile moves off-screen to the left, reset its position to the right
+      if (tile.x + groundWidth < 0) {
+        tile.x = ground.getChildren().length * groundWidth - groundWidth - 2;
+      }
+    });
+    background.getChildren().forEach((bgTile) => {
+      bgTile.x -= speed / 10;
 
-    // If a tile moves off-screen to the left, reset its position to the right
-    if (bgTile.x + bgWidth < 0) {
-      bgTile.x = background.getChildren().length * bgWidth - bgWidth;
-    }
-  });
+      // If a tile moves off-screen to the left, reset its position to the right
+      if (bgTile.x + bgWidth < 0) {
+        bgTile.x = background.getChildren().length * bgWidth - bgWidth;
+      }
+    });
+  }
 }
 function lose() {
-  this.tweens.add({
-    targets: background.getChildren(), // All images in the group
-    tint: [0xff0000, 0xffffff], // Pulse from red (0xff0000) to normal (0xffffff)
-    duration: 200, // Duration for one pulse cycle
-    yoyo: true, // Yoyo effect to go back and forth
-    repeat: 0, // Repeat indefinitely
-    ease: 'Sine.easeInOut', // Smooth easing function
-  });
+  play = false;
+
+  player.destroy(); // Remove the rock
 }
 function makeBlock(xInt, yInt) {
-  let block = this.physics.add.image(500 + xInt * 64, 400 + yInt * 64, 'block');
+  let block = this.physics.add.image(750 + xInt * 64, 658 - yInt * 64, 'block');
+  blocks.add(block);
   block.setOrigin(0, 1);
   block.body.allowGravity = false;
   block.body.immovable = true;
   block.setDisplaySize(64, 64);
-  blocks.add(block);
 }
 function makeSpike(xInt, yInt) {
-  let spike = this.physics.add.image(
-    1000 + xInt * 64,
-    400 - yInt * 64,
-    'spike'
-  );
+  let spike = this.physics.add.image(750 + xInt * 64, 658 - yInt * 64, 'spike');
+  spikes.add(spike);
   spike.setOrigin(0, 1);
   spike.body.allowGravity = false;
   spike.body.immovable = true;
   spike.setDisplaySize(64, 64);
   spike.body.setSize(spike.width * 0.2, spike.height * 0.2);
-  spikes.add(spike);
 }
