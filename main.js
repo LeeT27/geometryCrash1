@@ -27,7 +27,6 @@ let groundWidth;
 let bgWidth;
 let blocks;
 let spikes;
-let play = true;
 
 const game = new Phaser.Game(config);
 function preload() {
@@ -36,10 +35,6 @@ function preload() {
   this.load.image('block', 'assets/block.webp');
   this.load.image('spike', 'assets/spike.png');
   this.load.image('background', 'assets/background.jpg');
-  this.load.spritesheet('explosion', 'assets/explosion.png', {
-    frameWidth: 100,
-    frameHeight: 95,
-  });
 }
 
 function create() {
@@ -90,80 +85,33 @@ function create() {
     null,
     this
   );
-  //COURSE IS CREATED HERE
-  makeBlock.call(this, 3, 3);
+  makeBlock.call(this, 3, 2);
   makeBlock.call(this, 4, 2);
   makeBlock.call(this, 5, 2);
-  makeBlock.call(this, 6, 2);
-  makeBlock.call(this, 7, 3);
-  makeSpike.call(this, 4, 5);
-  makeSpike.call(this, 6, 5);
-  makeSpike.call(this, 9, 0);
-  makeSpike.call(this, 10, 0);
-
-  for (let i = 0; i < 99; i++) {
-    makeSpike.call(this, 10 + 5 * i, 0);
-    makeSpike.call(this, 16.8 + 5 * i, 0);
-  }
-
-  for (let i = 0; i < 99; i++) {
-    makeBlock.call(this, 20 + i, 5);
-  }
-
-  // ^^^^
-
-  this.anims.create({
-    key: 'explode',
-    frames: this.anims.generateFrameNumbers('explosion', { start: 0, end: 25 }), // Adjust frame numbers
-    frameRate: 60,
-    hideOnComplete: true, // Automatically hide when done
-  });
 }
 
 function handlePlayerGroundCollision(player, tile) {
   player.y = 625;
 }
 function handlePlayerSpikeCollision(player, spike) {
-  lose(player);
-  const explosion = this.physics.add
-    .sprite(player.x, player.y, 'explosion')
-    .play('explode');
-  explosion.body.allowGravity = false;
-  explosion.on('animationcomplete', () => {
-    explosion.destroy();
-  });
+  lose();
 }
 function handlePlayerBlockCollision(player, block) {
-  const playerBounds = player.getBounds();
-  const blockBounds = block.getBounds();
-
-  // Check for bottom collision - if player hits the bottom of the block, they lose
-  if (
-    playerBounds.bottom <= blockBounds.top &&
-    playerBounds.top < blockBounds.top
-  ) {
-    // Reposition the player on top of the block
-    player.y = block.y - player.height / 2;
-  }
-  if (
-    playerBounds.bottom >= blockBounds.top &&
-    playerBounds.top < blockBounds.top
-  ) {
+  if (player.getBounds().bottom >= block.getBounds().top) {
+    // Player hits the bottom (game over)
     lose();
-    return;
-  }
-
-  // Check for side collisions (left or right) - if player hits side, they lose
-  if (
-    playerBounds.left < blockBounds.right &&
-    playerBounds.right > blockBounds.left &&
-    playerBounds.bottom > blockBounds.top // This ensures that player is not landing from above
+  } else if (
+    player.getBounds().left <= block.getBounds().right ||
+    player.getBounds().right >= block.getBounds().left
   ) {
+    // Player hits the left or right side of the block (game over)
     lose();
-    return;
   }
-
-  // Check if the player hits the top of the block (and they are falling down)
+  // Check if the player hits the top of the block
+  if (player.getBounds().top <= block.getBounds().bottom) {
+    // Player hits the top, keep player's y position on top
+    player.y = block.y - player.height / 2; // Adjust this depending on your setup
+  }
 }
 
 function jump() {
@@ -199,57 +147,64 @@ function jump() {
 }
 
 function update() {
-  if (play === true) {
-    blocks.getChildren().forEach((block) => {
-      block.x -= speed;
-      if (block.x + block.width < 0) {
-        block.destroy(); // Remove block once it goes off-screen
-      }
-    });
+  blocks.getChildren().forEach((block) => {
+    block.x -= speed;
+    if (block.x + block.width < 0) {
+      block.destroy(); // Remove block once it goes off-screen
+    }
+  });
 
-    spikes.getChildren().forEach((spike) => {
-      spike.x -= speed;
-      if (spike.x + spike.width < -500) {
-        spike.destroy(); // Remove spike once it goes off-screen
-      }
-    });
-    ground.getChildren().forEach((tile) => {
-      tile.x -= speed;
+  spikes.getChildren().forEach((spike) => {
+    spike.x -= speed;
+    if (spike.x + spike.width < 0) {
+      spike.destroy(); // Remove spike once it goes off-screen
+    }
+  });
+  ground.getChildren().forEach((tile) => {
+    tile.x -= speed;
 
-      // If a tile moves off-screen to the left, reset its position to the right
-      if (tile.x + groundWidth < 0) {
-        tile.x = ground.getChildren().length * groundWidth - groundWidth - 2;
-      }
-    });
-    background.getChildren().forEach((bgTile) => {
-      bgTile.x -= speed / 10;
+    // If a tile moves off-screen to the left, reset its position to the right
+    if (tile.x + groundWidth < 0) {
+      tile.x = ground.getChildren().length * groundWidth - groundWidth - 2;
+    }
+  });
+  background.getChildren().forEach((bgTile) => {
+    bgTile.x -= speed / 10;
 
-      // If a tile moves off-screen to the left, reset its position to the right
-      if (bgTile.x + bgWidth < 0) {
-        bgTile.x = background.getChildren().length * bgWidth - bgWidth;
-      }
-    });
-  }
+    // If a tile moves off-screen to the left, reset its position to the right
+    if (bgTile.x + bgWidth < 0) {
+      bgTile.x = background.getChildren().length * bgWidth - bgWidth;
+    }
+  });
 }
 function lose() {
-  play = false;
-
-  player.destroy(); // Remove the rock
+  this.tweens.add({
+    targets: background.getChildren(), // All images in the group
+    tint: [0xff0000, 0xffffff], // Pulse from red (0xff0000) to normal (0xffffff)
+    duration: 200, // Duration for one pulse cycle
+    yoyo: true, // Yoyo effect to go back and forth
+    repeat: 0, // Repeat indefinitely
+    ease: 'Sine.easeInOut', // Smooth easing function
+  });
 }
 function makeBlock(xInt, yInt) {
-  let block = this.physics.add.image(750 + xInt * 64, 657 - yInt * 64, 'block');
-  blocks.add(block);
+  let block = this.physics.add.image(500 + xInt * 64, 400 + yInt * 64, 'block');
   block.setOrigin(0, 1);
   block.body.allowGravity = false;
   block.body.immovable = true;
   block.setDisplaySize(64, 64);
+  blocks.add(block);
 }
 function makeSpike(xInt, yInt) {
-  let spike = this.physics.add.image(750 + xInt * 64, 657 - yInt * 64, 'spike');
-  spikes.add(spike);
+  let spike = this.physics.add.image(
+    1000 + xInt * 64,
+    400 - yInt * 64,
+    'spike'
+  );
   spike.setOrigin(0, 1);
   spike.body.allowGravity = false;
   spike.body.immovable = true;
   spike.setDisplaySize(64, 64);
   spike.body.setSize(spike.width * 0.2, spike.height * 0.2);
+  spikes.add(spike);
 }
