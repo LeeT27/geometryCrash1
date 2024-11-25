@@ -52,8 +52,8 @@ function create() {
   spikes = this.physics.add.group();
   ground = this.physics.add.group();
   background = this.add.group();
-  for (let i = 0; i < 10; i++) {
-    let tile = this.add.tileSprite(i * 125, 720, 148, 125, 'ground');
+  for (let i = 0; i < 16; i++) {
+    let tile = this.add.tileSprite(i * 64, 720, 64, 125, 'ground');
     ground.add(tile);
     tile.body.allowGravity = false;
     tile.body.immovable = true;
@@ -98,20 +98,6 @@ function create() {
   makeBlock.call(this, 7, 3);
   makeSpike.call(this, 4, 5);
   makeSpike.call(this, 6, 5);
-  makeSpike.call(this, 9, 0);
-  makeSpike.call(this, 10, 0);
-  makeBlock.call(this, 11, 0);
-  makeBlock.call(this, 12, 0);
-  makeBlock.call(this, 13, 0);
-
-  for (let i = 0; i < 99; i++) {
-    makeSpike.call(this, 10 + 5 * i, 0);
-    makeSpike.call(this, 16.8 + 5 * i, 0);
-  }
-
-  for (let i = 0; i < 99; i++) {
-    makeBlock.call(this, 20 + i, 5);
-  }
 
   // ^^^^
 
@@ -137,12 +123,17 @@ function handlePlayerSpikeCollision(player, spike) {
   });
 }
 function handlePlayerBlockCollision(player, block) {
-  if (player.bottom <= block.top + 5) {
-    alert('hello');
-    player.bottom = 400;
-  } else {
+  if (player.y + 64 > block.y) {
     lose();
+    const explosion = this.physics.add
+      .sprite(player.x, player.y, 'explosion')
+      .play('explode');
+    explosion.body.allowGravity = false;
+    explosion.on('animationcomplete', () => {
+      explosion.destroy();
+    });
   }
+  player.y = block.y - 96;
 }
 
 function jump() {
@@ -180,20 +171,20 @@ function jump() {
 function update() {
   if (play === true) {
     blocks.getChildren().forEach((block) => {
-      block.x -= speed;
-      if (block.x + block.width < 0) {
+      block.x -= speed * (game.loop.delta / 6);
+      if (block.x + block.width < -500) {
         block.destroy(); // Remove block once it goes off-screen
       }
     });
 
     spikes.getChildren().forEach((spike) => {
-      spike.x -= speed;
+      spike.x -= speed * (game.loop.delta / 6);
       if (spike.x + spike.width < -500) {
         spike.destroy(); // Remove spike once it goes off-screen
       }
     });
     ground.getChildren().forEach((tile) => {
-      tile.x -= speed;
+      tile.x -= speed * (game.loop.delta / 6);
 
       // If a tile moves off-screen to the left, reset its position to the right
       if (tile.x + groundWidth < 0) {
@@ -205,7 +196,7 @@ function update() {
 
       // If a tile moves off-screen to the left, reset its position to the right
       if (bgTile.x + bgWidth < 0) {
-        bgTile.x = background.getChildren().length * bgWidth - bgWidth;
+        bgTile.x = background.getChildren().length;
       }
     });
   }
