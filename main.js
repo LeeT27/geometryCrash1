@@ -52,18 +52,19 @@ function create() {
   spikes = this.physics.add.group();
   ground = this.physics.add.group();
   background = this.add.group();
-  for (let i = 0; i < 16; i++) {
-    let tile = this.add.tileSprite(i * 64, 720, 64, 125, 'ground');
+  for (let i = 0; i < 11; i++) {
+    let tile = this.add.tileSprite(i * 125, 720, 148, 125, 'ground');
     ground.add(tile);
     tile.body.allowGravity = false;
     tile.body.immovable = true;
     tile.body.setSize(200, 125);
   }
   bgWidth = 1212;
-  for (let i = 0; i < 3; i++) {
+  for (let i = 0; i < 20; i++) {
     let bgTile = this.add.tileSprite(i * 1212, 0, 1212, 720, 'background');
-    bgTile.setDisplaySize(bgTile.width, 1400);
+    bgTile.setOrigin(0, 0);
     background.add(bgTile);
+
     bgTile.setDepth(-1);
   }
 
@@ -91,13 +92,7 @@ function create() {
     this
   );
   //COURSE IS CREATED HERE
-  makeBlock.call(this, 3, 3);
-  makeBlock.call(this, 4, 2);
-  makeBlock.call(this, 5, 2);
-  makeBlock.call(this, 6, 2);
-  makeBlock.call(this, 7, 3);
-  makeSpike.call(this, 4, 5);
-  makeSpike.call(this, 6, 5);
+  makeSpike.call(this, 5, 0);
 
   // ^^^^
 
@@ -188,11 +183,12 @@ function update() {
 
       // If a tile moves off-screen to the left, reset its position to the right
       if (tile.x + groundWidth < 0) {
-        tile.x = ground.getChildren().length * groundWidth - groundWidth - 2;
+        // Find the rightmost tile
+        tile.x = groundWidth * 10;
       }
     });
     background.getChildren().forEach((bgTile) => {
-      bgTile.x -= speed / 10;
+      bgTile.x -= speed / 5;
 
       // If a tile moves off-screen to the left, reset its position to the right
       if (bgTile.x + bgWidth < 0) {
