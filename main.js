@@ -27,6 +27,7 @@ let groundWidth;
 let bgWidth;
 let blocks;
 let spikes;
+let song;
 let play = true;
 
 const game = new Phaser.Game(config);
@@ -36,6 +37,7 @@ function preload() {
   this.load.image('block', 'assets/block.webp');
   this.load.image('spike', 'assets/spike.png');
   this.load.image('background', 'assets/background.jpg');
+  this.load.audio('song', 'assets/song.mp3');
   this.load.spritesheet('explosion', 'assets/explosion.png', {
     frameWidth: 100,
     frameHeight: 95,
@@ -102,6 +104,9 @@ function create() {
     frameRate: 60,
     hideOnComplete: true, // Automatically hide when done
   });
+
+  song = this.sound.add('song');
+  song.play();
 }
 
 function handlePlayerGroundCollision(player, tile) {
