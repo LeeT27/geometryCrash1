@@ -28,7 +28,9 @@ let bgWidth;
 let blocks;
 let spikes;
 let song;
-let play = true;
+let play = false;
+let button;
+let startBg;
 
 const game = new Phaser.Game(config);
 function preload() {
@@ -106,7 +108,38 @@ function create() {
   });
 
   song = this.sound.add('song');
-  song.play();
+
+  startBg = this.add.rectangle(0, 0, 1024, 768, 0x89cff0).setOrigin(0, 0);
+  button = this.add.text(
+    this.cameras.main.width / 2,
+    this.cameras.main.height / 2,
+    'START',
+    {
+      fill: '#fff',
+      backgroundColor: '#6495ED',
+      font: '64px Comfortaa',
+      shadow: {
+        offsetX: 3, // Horizontal shadow offset
+        offsetY: 3, // Vertical shadow offset
+        color: '#000000', // Shadow color (black)
+        blur: 10, // Blur level of the shadow
+        stroke: false, // No stroke on the shadow itself
+        fill: true, // Fill the shadow color
+      },
+    }
+  );
+  button.setOrigin(0.5, 0.5);
+  button.setInteractive();
+  button.on('pointerdown', () => {
+    start();
+    song.play();
+  });
+}
+
+function start() {
+  button.destroy();
+  startBg.destroy();
+  play = true;
 }
 
 function handlePlayerGroundCollision(player, tile) {
