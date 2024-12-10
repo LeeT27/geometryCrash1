@@ -96,7 +96,54 @@ function create() {
     this
   );
   //COURSE IS CREATED HERE
-  makeSpike.call(this, 5, 0);
+  makeSpike.call(this, 7, 0);
+  makeSpike.call(this, 23, 0);
+  makeSpike.call(this, 38, 0);
+  makeSpike.call(this, 38, 0);
+  for (let i = 39; i <= 57; i++) {
+    makeBlock.call(this, i, 0);
+  }
+  makeSpike.call(this, 46, 1);
+  makeSpike.call(this, 53, 1);
+  makeSpike.call(this, 54, 1);
+  for (let i = 55; i <= 57; i++) {
+    makeBlock.call(this, i, 1);
+    makeBlock.call(this, i, 2);
+    makeBlock.call(this, i, 4.5);
+  }
+  makeBlock.call(this, 58, 2);
+  for (let i = 58; i <= 61; i++) {
+    makeSpike.call(this, i, 0);
+  }
+  makeSpike.call(this, 68, 0);
+  makeSpike.call(this, 69, 0);
+
+  makeBlock.call(this, 77, 0);
+  makeBlock.call(this, 77, 1);
+  makeBlock.call(this, 78, 0);
+  makeBlock.call(this, 78, 1);
+  makeBlock.call(this, 81, 0);
+  makeSpike.call(this, 82, 0);
+  makeSpike.call(this, 83, 0);
+
+  makeSpike.call(this, 90, 0);
+  makeSpike.call(this, 91, 0);
+
+  for (let i = 98; i <= 150; i++) {
+    makeBlock.call(this, i, 0);
+    makeBlock.call(this, i + 7, 1);
+    makeBlock.call(this, i + 14, 2);
+    makeBlock.call(this, i + 21, 3);
+  }
+  makeSpike.call(this, 97, 0);
+  makeSpike.call(this, 104, 1);
+  makeSpike.call(this, 111, 2);
+  makeSpike.call(this, 118, 3);
+  makeSpike.call(this, 125, 4);
+  makeSpike.call(this, 126, 4);
+
+  makeSpike.call(this, 130, 4);
+  makeSpike.call(this, 131, 4);
 
   // ^^^^
 
@@ -116,7 +163,6 @@ function create() {
     'START',
     {
       fill: '#fff',
-      backgroundColor: '#6495ED',
       font: '64px Comfortaa',
       shadow: {
         offsetX: 3, // Horizontal shadow offset
