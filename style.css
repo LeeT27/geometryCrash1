@@ -1,5 +1,91 @@
 #game-container {
   width: 1024px; /* Set the width */
   height: 768px; /* Set the height */
-  margin: 20px auto; /* Center the container */
+  margin: 50px auto; /* Center the container */
+}
+
+#game2-container {
+  width: 1024px; /* Set the width */
+  height: 768px; /* Set the height */
+  margin: 50px auto; /* Center the container */
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  height: 100vh; /* Full viewport height */
+  background: linear-gradient(45deg, #00aaff, #0077ff, #003366);
+  background-size: 300% 300%; /* Stretch the gradient for smoother animation */
+  animation: gradientAnimation 10s ease infinite; /* Animation with smooth transition */
+  font-family: 'comfortaa';
+}
+@keyframes gradientAnimation {
+  0% {
+    background-position: 0% 50%; /* Starting position of the gradient */
+  }
+  50% {
+    background-position: 100% 50%; /* Gradient shifts halfway */
+  }
+  100% {
+    background-position: 0% 50%; /* Gradient returns to starting position */
+  }
+}
+.navbar {
+  display: flex; /* Flexbox layout */
+  justify-content: center; /* Space between logo and links */
+  align-items: center; /* Vertically center the items */
+  padding: 10px 20px; /* Add some space around the navbar */
+  background-color: #333; /* Dark background color */
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+}
+
+/* Logo style */
+.navbar .logo a {
+  color: white;
+  font-size: 24px;
+  text-decoration: none;
+  font-weight: bold;
+}
+
+/* Navbar links container */
+.nav-links {
+  display: flex; /* Make the links horizontal */
+  list-style-type: none; /* Remove bullet points */
+}
+
+/* Navbar item (link) styles */
+.nav-links li {
+  margin-left: 20px; /* Space between links */
+}
+
+.nav-links a {
+  color: white; /* White text color */
+  text-decoration: none; /* Remove underline */
+  font-size: 18px;
+  padding: 5px 10px; /* Padding around the links */
+  transition: background-color 0.3s; /* Smooth transition for hover effect */
+}
+
+.nav-links a:hover {
+  background-color: #575757; /* Change background on hover */
+  border-radius: 5px; /* Rounded corners on hover */
+}
+#content1 {
+  border: 1px solid #000;
+  width: 900px;
+  height: 1000px;
+  margin: auto;
+  margin-top: 300px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  color: white;
+}
+#title {
+  font-size: 75px;
+  padding: auto;
 }
