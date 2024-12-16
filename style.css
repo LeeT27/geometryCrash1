@@ -18,6 +18,9 @@ body {
   background-size: 300% 300%; /* Stretch the gradient for smoother animation */
   animation: gradientAnimation 10s ease infinite; /* Animation with smooth transition */
   font-family: 'comfortaa';
+  font-size: 23px;
+  line-height: 1.9;
+  text-align: center;
 }
 @keyframes gradientAnimation {
   0% {
@@ -76,7 +79,7 @@ body {
 #content1 {
   border: 1px solid #000;
   width: 900px;
-  height: 1000px;
+  height: 700px;
   margin: auto;
   margin-top: 300px;
   display: flex;
